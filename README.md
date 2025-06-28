@@ -6,48 +6,47 @@ This guide will help you set up **Immich** on your Raspberry Pi as a self-hosted
 
 ## Overview: HTTP vs HTTPS
 
-- **HTTP (HyperText Transfer Protocol)**  
-  The standard protocol used by browsers to communicate with web servers. Data is transferred in plain text, which can be intercepted by attackers. HTTP typically uses port **80**.
-
-- **HTTPS (HTTP Secure)**  
-  HTTP with an added security layer using SSL/TLS encryption. This protects data in transit and verifies the authenticity of the website via certificates. HTTPS typically uses port **443**.
+| Protocol | Port | Encryption | Description |
+|----------|------|------------|-------------|
+| **HTTP** | 80   | ❌ None     | Sends data in plain text, vulnerable to interception. |
+| **HTTPS** | 443 | ✅ SSL/TLS | Encrypts data in transit and verifies website identity. |
 
 ---
 
 ## What is Caddy and a Reverse Proxy?
+**Caddy** is a lightweight web server that:
+- Automatically manages SSL/TLS certificates using Let’s Encrypt.
+- Functions as a **reverse proxy** to route traffic to internal services.
+- Listens on ports **80** (HTTP) and **443** (HTTPS).
+- Redirects all HTTP traffic to HTTPS by default.
 
-- **Caddy** is a modern web server that automatically manages HTTPS certificates and can function as a reverse proxy.  
-- It listens on ports **80** (HTTP) and **443** (HTTPS) and automatically redirects HTTP requests to HTTPS.  
-- Acting as a **reverse proxy**, Caddy receives incoming requests, handles SSL termination, and forwards requests to your backend services (such as Immich running in Docker), which can communicate over plain HTTP internally.
-
-**How Caddy works as a reverse proxy:**
-
-1. A user visits your domain (e.g., `https://your-domain.com`).  
-2. Caddy receives the request on port 80 or 443.  
-3. Caddy obtains and manages the SSL certificate for HTTPS (via Let's Encrypt).  
-4. The request is forwarded to your internal service (e.g., Immich server container).  
-5. The internal server processes the request and sends a response.  
-6. Caddy encrypts the response and sends it back securely to the client.
+**Reverse Proxy Flow:**
+1. Client requests `https://your-domain.com`.
+2. Caddy receives the request and handles SSL.
+3. Caddy forwards the request to your local Immich container (`http://immich-server:port`).
+4. The response is returned to Caddy.
+5. Caddy encrypts and sends it securely to the user over HTTPS.
 
 ---
 
 ## Setup Instructions
 
 ### Prerequisites
-
-- Access to your router's configuration for port forwarding.  
-- Dynamic DNS (DynDNS) service set up for your public IP (e.g., via [no-ip.com](https://no-ip.com)).  
-- Raspberry Pi with 64-bit OS and Docker installed.  
-- A microSD card for Raspberry Pi storage.
+- Raspberry Pi (64-bit OS)
+- Docker installed
+- microSD card for storage
+- Access to router for port forwarding
+- Dynamic DNS account (e.g. [no-ip.com](https://no-ip.com))
 
 ---
 
 ### Step 1: Configure Port Forwarding & Docker Network
 
-1. Forward **TCP ports 80 and 443** from your router to your Raspberry Pi.  
-2. Set up a Dynamic DNS hostname pointing to your public IP.  
-3. Install Docker and optionally Portainer (for GUI management).  
-4. Create a Docker network for container communication `docker network create {network_name}
+1. Log in to your router (e.g. `fritz.box`)  
+2. **Forward ports 80 (HTTP) and 443 (HTTPS)** to your Raspberry Pi's local IP.  
+3. Set up a **DynDNS** hostname for your public IP.  
+4. On your Pi, **create a shared Docker network**:  
+   `docker network create shared_net`
 
 ### Step 2: Set Up Caddy Reverse Proxy
 1. Create a `docker-compose.yml` for Caddy following [Caddy's docker compose example](https://caddyserver.com/docs/running#docker-compose)
@@ -75,7 +74,7 @@ networks:
 4. Restart or start Caddy to apply configuration with `docker compose up -d`
 
 
-### 3. Set Up Immich via Docker
+### Step 3: Set Up Immich on Docker
 1. Follow the instructions on [Immich's quick start guide](https://immich.app/docs/overview/quick-start/).
 2. Configure your `.env` file and set `UPLOAD_LOCATION` to the desired storage path on your microSD card.
 3. Modify `Immich docker-compose.yml` to join the docker network by adding the following under each relevant service:
@@ -97,7 +96,7 @@ networks:
 4. Run Immich Containers `docker compose up -d`
 
 
-### 4. Enjoy your HTTPS encrypted Cloud Solution
+### Step 4: Enjoy your HTTPS-encrypted Immich Cloud
 Opern your Browser and navigate to `https://{your_domain.net}`
 ![image](https://github.com/user-attachments/assets/469388f3-69b7-465c-9b91-89b219e6149f)
 
