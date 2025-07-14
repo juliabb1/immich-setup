@@ -44,7 +44,7 @@ This guide will help you set up **Immich** on your Raspberry Pi as a self-hosted
 - Docker installed
 - microSD card for storage
 - Access to router for port forwarding
-- Dynamic DNS account (e.g. [no-ip.com](https://no-ip.com))
+- Dynamic DNS account (e.g. [dynv6.net](https://dynv6.com/))
 
 ---
 
